@@ -1,14 +1,118 @@
-# A fast, small, safe, gradually typed embeddable scripting language derived from Lua
-#
-# https://github.com/luau-lang/luau
-# https://luau.org/
+-- LocalScript đặt trong StarterPlayerScripts
 
-# Code coverage
-coverage.out
+local player = game:GetService("Players").LocalPlayer
+local RunService = game:GetService("RunService")
 
-# Profiling
-profile.out
-profile.svg
+-- Tạo giao diện
+local function createGUI(character)
+	if not player:FindFirstChild("PlayerGui") then return end
 
-# Time trace
-trace.json
+	-- Xóa GUI cũ
+	local oldGui = player.PlayerGui:FindFirstChild("GravityToggleUI")
+	if oldGui then oldGui:Destroy() end
+
+	local humanoid = character:WaitForChild("Humanoid")
+
+	-- Tạo GUI
+	local screenGui = Instance.new("ScreenGui")
+	screenGui.Name = "GravityToggleUI"
+	screenGui.ResetOnSpawn = false
+	screenGui.Parent = player.PlayerGui
+
+	local outerFrame = Instance.new("Frame")
+	outerFrame.Size = UDim2.new(0.17, 0, 0.2, 0)
+	outerFrame.Position = UDim2.new(0.37, 0, 0.45, 0)
+	outerFrame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+	outerFrame.BackgroundTransparency = 0.2
+	outerFrame.BorderSizePixel = 0
+	outerFrame.Active = true
+	outerFrame.Draggable = true
+	outerFrame.Parent = screenGui
+
+	local toggleButton = Instance.new("TextButton")
+	toggleButton.Parent = outerFrame
+	toggleButton.Text = "Waiting..."
+	toggleButton.Size = UDim2.new(1, 0, 0.7, 0)
+	toggleButton.Position = UDim2.new(0, 0, 0, 0)
+	toggleButton.BackgroundColor3 = Color3.new(1, 0, 0)
+	toggleButton.TextColor3 = Color3.new(0, 0, 0)
+	toggleButton.TextScaled = true
+	toggleButton.Font = Enum.Font.SourceSansBold
+	toggleButton.AutoButtonColor = true
+
+	local creditLabel = Instance.new("TextLabel")
+	creditLabel.Parent = outerFrame
+	creditLabel.Text = "Made By @delta_user.1 on TikTok And Idunno_games24 on Roblox :P"
+	creditLabel.Size = UDim2.new(1, 0, 0.3, 0)
+	creditLabel.Position = UDim2.new(0, 0, 0.7, 0)
+	creditLabel.BackgroundTransparency = 1
+	creditLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+	creditLabel.TextScaled = true
+	creditLabel.Font = Enum.Font.SourceSansItalic
+
+	-- Hiệu ứng cầu vồng
+	local function HSVtoRGB(h, s, v)
+		local i = math.floor(h * 6)
+		local f = h * 6 - i
+		local p = v * (1 - s)
+		local q = v * (1 - f * s)
+		local t = v * (1 - (1 - f) * s)
+		local r, g, b
+
+		if i % 6 == 0 then r, g, b = v, t, p
+		elseif i % 6 == 1 then r, g, b = q, v, p
+		elseif i % 6 == 2 then r, g, b = p, v, t
+		elseif i % 6 == 3 then r, g, b = p, q, v
+		elseif i % 6 == 4 then r, g, b = t, p, v
+		else r, g, b = v, p, q end
+
+		return Color3.new(r, g, b)
+	end
+
+	coroutine.wrap(function()
+		local hue = 0
+		while creditLabel and creditLabel.Parent do
+			hue = (hue + 0.01) % 1
+			creditLabel.TextColor3 = HSVtoRGB(hue, 1, 1)
+			RunService.RenderStepped:Wait()
+		end
+	end)()
+
+	-- Logic bật/tắt trọng lực
+	local isTripping = false
+	local normalGravity = workspace.Gravity
+
+	local function toggleTrip()
+		isTripping = not isTripping
+		if isTripping then
+			toggleButton.Text = "Gravity: On"
+			toggleButton.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
+			workspace.Gravity = 0
+			coroutine.wrap(function()
+				while isTripping and humanoid and humanoid.Parent do
+					humanoid:ChangeState(Enum.HumanoidStateType.Ragdoll)
+					task.wait(0.1)
+				end
+			end)()
+		else
+			toggleButton.Text = "Gravity: Off"
+			toggleButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+			workspace.Gravity = normalGravity
+		end
+	end
+
+	toggleButton.MouseButton1Click:Connect(toggleTrip)
+end
+
+-- Đảm bảo Character sẵn sàng
+local function setup()
+	local char = player.Character or player.CharacterAdded:Wait()
+	player:WaitForChild("PlayerGui")
+	createGUI(char)
+end
+
+setup()
+player.CharacterAdded:Connect(function()
+	task.wait(1)
+	setup()
+end)
