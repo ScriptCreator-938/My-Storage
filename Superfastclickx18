@@ -1,0 +1,77 @@
+-- LocalScript trong StarterGui
+
+-- GUI
+local ScreenGui = Instance.new("ScreenGui")
+local DragFrame = Instance.new("Frame")
+local Title = Instance.new("TextLabel")
+local ToggleButton = Instance.new("TextButton")
+
+ScreenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+ScreenGui.ResetOnSpawn = false
+
+-- Frame để kéo
+DragFrame.Parent = ScreenGui
+DragFrame.Size = UDim2.new(0, 200, 0, 90)
+DragFrame.Position = UDim2.new(0.5, -100, 0.5, -45)
+DragFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+DragFrame.Active = true
+DragFrame.Draggable = true -- kéo thả
+
+-- Tiêu đề
+Title.Parent = DragFrame
+Title.Size = UDim2.new(1, 0, 0, 30)
+Title.BackgroundTransparency = 1
+Title.Text = "SUPER AUTO CLICK X18"
+Title.TextColor3 = Color3.fromRGB(255, 255, 0)
+Title.Font = Enum.Font.SourceSansBold
+Title.TextSize = 20
+
+-- Nút bật/tắt
+ToggleButton.Parent = DragFrame
+ToggleButton.Size = UDim2.new(1, -20, 0, 40)
+ToggleButton.Position = UDim2.new(0, 10, 0, 40)
+ToggleButton.Text = "OFF"
+ToggleButton.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
+ToggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+ToggleButton.Font = Enum.Font.SourceSansBold
+ToggleButton.TextSize = 24
+
+-- Logic
+local toggled = false
+local rs = game:GetService("ReplicatedStorage")
+local events = rs:WaitForChild("Events")
+
+-- 3 remote gốc
+local clickMoney = events:WaitForChild("ClickMoney")
+local clickGem = clickMoney:WaitForChild("ClickGem")
+local clickMining = clickMoney:WaitForChild("ClickMining")
+
+-- Spam loop
+task.spawn(function()
+	while task.wait(0.1) do
+		if toggled then
+			-- Nhân bản 6 lần cho mỗi loại (tổng 18 FireServer)
+			for i = 1,6 do
+				clickMoney:FireServer()
+			end
+			for i = 1,6 do
+				clickGem:FireServer()
+			end
+			for i = 1,6 do
+				clickMining:FireServer()
+			end
+		end
+	end
+end)
+
+-- Toggle ON/OFF
+ToggleButton.MouseButton1Click:Connect(function()
+	toggled = not toggled
+	if toggled then
+		ToggleButton.Text = "ON"
+		ToggleButton.BackgroundColor3 = Color3.fromRGB(0, 200, 0)
+	else
+		ToggleButton.Text = "OFF"
+		ToggleButton.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
+	end
+end)
